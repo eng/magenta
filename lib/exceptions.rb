@@ -1,0 +1,2 @@
+class ServerError < RuntimeError
+end

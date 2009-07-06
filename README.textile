@@ -1,0 +1,100 @@
+h1. Magenta
+
+*NOTE: THIS SOFTWARE IS NOT READY TO USE IN PRODUCTION.  FORK AT YOUR OWN RISK.*
+
+The easiest way to deploy your Rails application.
+
+Hint: do this now:
+
+@magenta.rb --help@ 
+
+Simplest possible way to get started: you have your app at @~/myapp@. Let's do a dry run of deploying it to your local machine under @~/mysites@:
+
+@magenta --dry-run -c ~/myapp -d ~/mysites@
+
+If you're comfortable with what you see, take out the @--dry-run@ and watch it get installed into the @~/mysites@ directory.
+
+h3. Convention over configuration
+
+Magenta looks at your Rails app to figure everything out all by itself.
+
+Well, almost everything.  There are two pieces of information magenta can't know just by looking at your code:
+
+# Which server you want to deploy to.
+# What directory to deploy your application into.
+
+Use @--server@ to specify the server (default is localhost if not specified), and @--deploy-to@ to specify the deployment folder (required).  Or put these values into your magenta.yml file.
+
+Magenta will create a small directory tree on your server like this:
+
+<pre>
+/deploy_dir
+  |
+  |--- current  -> releases/20090704112345
+  |
+  |--- releases
+  |
+  |--- shared
+  
+</pre>
+
+Like Capistrano, this directory structure allows for atomic deployments and rollback capabilities.  
+
+Magenta checks for this structure every time, and creates or repairs it automatically.  
+
+If you have a local copy of your Rails app, Magenta will automatically inspect it to figure out your remote repository location by calling *git remote show origin* and parsing the results to figure out the URL of your origin.
+
+Magenta uses the ssh key of the currently logged-in user to open a connection to your server.
+
+Magenta values convention over configuration, but configuration is still possible to override defaults.
+
+h3. This Is Opinionated Software
+
+Magenta makes a lot of assumptions:
+
+* You're deploying a Rails application.
+* You're using Git.
+* You're using Passenger (on either Apache or Nginx)
+* You're deploying to a Linux server.
+* You're deploying to only one server.
+* You have SSH keys setup for the current user.
+* Your server can access your git repository.
+* The current user has all necessary rights on all servers involved without using sudo.
+* You want migrations to run *after* the release is copied to your server, and *before* it's made to be the current instance.
+* You want to restart your application after deployment.
+
+Need something different?  Try "Capistrano":http://www.capify.org.
+
+h3. Configuration
+
+You can supply the two required settings (server and deployment directory) on the command line, or save them the a YAML file for repeated use.
+
+Magenta will automatically look for a file named magenta.yml or config/magenta.yml from the current directory; or you can use the -c switch to specify the exact location of your magenta.yml.
+
+Here are all of the possible settings you can have in magenta.yml:
+
+table{border:1px solid black}.
+|_<.Name |_<.Example value |_<.Notes |
+|server |myserver.com |*Required* name or IP of your server with SSH access on port 22|
+| deploy_to |/var/apps/ | *Required* full path to root of directory structure|
+| user | jeff | SSH username; defaults to currently logged-in user|
+| repository | git://github.com/MyAccount/myapp.git|Full clone path; defaults to your app's remote origin|
+
+h3. Stage & Production Environments
+
+If you need different configurations for your stage environment, you can setup your .yml file like this:
+
+<pre>
+production:
+  server: myserver.com
+  deploy_to: /var/apps/
+stage:
+  server: mystageserver.com
+  deploy_to: /var/apps
+</pre>  
+  
+To deploy to your stage server:
+
+@magenta deploy --environment stage@
+
+If an environment is not specified, the production settings will be used by default.
