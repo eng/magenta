@@ -1,5 +1,5 @@
-require File.join(File.dirname(__FILE__), 'log')
-require File.join(File.dirname(__FILE__), 'app')
+require 'app'
+require 'executors'
     
 class Deploy
   
@@ -56,7 +56,6 @@ class Deploy
       raise "Repository not configured!" unless repository
 
       on_server do
-        whoami
         setup_directory_tree
         create_new_release
         run_migrations
@@ -80,12 +79,9 @@ class Deploy
   def execute_on_server(cmd, opts = {})
     opts[:raise_errors] = true if opts[:raise_errors].nil?
     
-    puts "will run: #{cmd}"
-    puts "opts: #{opts.inspect}"
     @ssh.exec!(cmd) do |ch, stream, data|
       if stream == :stderr
-        Log.warn "SERVER ERROR: #{data}"
-        puts opts[:raise_errors]
+        Log.warn "SERVER #{opts[:raise_errors] ? 'ERROR' : 'WARNING'}: #{data}"
         raise ServerError.new(data) if opts[:raise_errors]
       else
         Log.debug data

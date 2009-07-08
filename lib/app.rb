@@ -1,5 +1,3 @@
-require File.join(File.dirname(__FILE__), 'log')
-
 # server: jeffcohenonline.com # leave blank for local machine
 # user:                       # leave blank for current user
 # repository: ssh://jeffcohenonline.com/~/src/pw.git         # repo path
